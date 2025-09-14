@@ -1,0 +1,3 @@
+I need to keep track of all orders, then calculate a weighted mean for a certain time period
+need to build my own graph rendering function (line graph for now) first render the x and y axis then render lines that connect the different time points
+be able to hover over any point on the graph and a little note saying the time/date appears with the price at that time.

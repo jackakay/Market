@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="style.css">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Market</title>
+</head>
+<body>
+    <h1>Mini Market</h1>
+    <div id="header">
+        
+    <div id="chart">
+        <h2>Price Chart</h2>
+        <canvas id="priceChart" width="600" height="400"></canvas>
+    </div>
+
+    <div id="OrderSelection">
+    <p id="price">Current Price: $100</p>
+    <p>Amount: </p>
+    <input type="number" id="amount" value="1" min="1">
+    <p>Price: </p>
+    <input type="number" id="priceInput" value="100" min="1">
+    <br>
+    <button class="buys" id="limitBuyButton" >Limit Buy</button>
+    <button class="buys" id="buyButton" >Market Buy</button>
+    <br>
+    <button class="sells" id="limitSellButton" >Limit Sell</button>
+    <button class="sells" id="sellButton" >Market Sell</button>
+    </div>
+    <br>
+    </div>
+<h2>Order Book</h2>
+    <div id="OrderBook">
+        
+        <div id="bids">
+            <h3>Bids</h3>
+            <table id="buyOrderTable">
+                <tr>
+                    <th>Date</th>
+                    <th>Price</th>
+                    <th>Amount</th>
+                </tr>
+            </table>
+        </div>
+        <div id="asks">
+            <h3>Asks</h3>
+            <ul id="askList"></ul>
+        </div>
+    </div>
+
+    
+    <script src="script.js"></script>
+    
+</body>
+</html>

@@ -1,0 +1,85 @@
+body{
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    align-items: center;
+    text-align: center;
+    display: inline-block;
+
+}
+#header, #OrderBook{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+#chart{
+    flex: 1;
+    margin-left: 50px;
+}
+#OrderSelection{
+    
+    border: 2px solid black;
+    padding: 20px;
+    border-radius: 10px;
+    width: 300px;
+    height: 350px;
+    
+    flex: 1;
+    margin-left: 50px;
+    margin-top: 80px;
+}
+.buys{
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    padding: 10px 24px;
+    
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+.buys:hover {
+    background-color: #45a049;
+}
+
+.sells{
+    background-color: #e2360f; /* Green */
+    border: none;
+    color: white;
+    padding: 10px 24px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+.sells:hover {
+    background-color: #6b1d00;
+}
+
+#amount, #priceInput {
+    width: 80px;
+    padding: 5px;
+    margin: 10px 0;
+    box-sizing: border-box;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+}
+
+table, th, td {
+  border:1px solid black;
+}
+
+#priceChart {
+    margin-top: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+}

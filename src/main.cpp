@@ -84,17 +84,36 @@ int main() {
 		bidQueue.push(disInt(gen), 5, "user");
 	}
 	
-	svr.Get("/api/getaskprice", [askQueue](const httplib::Request&, httplib::Response& res) {
-      		int cheapestAsk = askQueue.top().price;
-		json data = { {"price", (cheapestAsk)}	};
-        	res.set_content(data.dump(), "application/json");
+
+	svr.Options(".*", [](const httplib::Request &, httplib::Response &res) {
+        res.set_header("Access-Control-Allow-Origin", "*");
+        res.set_header("Access-Control-Allow-Headers", "*");
+        res.set_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+        res.status = 204; // No Content
+    });
+
+	svr.set_mount_point("/", "frontend");
+	svr.Get("/api/price", [askQueue, bidQueue](const httplib::Request&, httplib::Response& res) {
+
+		res.set_header("Content-Type", "text/event-stream");
+        res.set_header("Cache-Control", "no-cache");
+        res.set_header("Connection", "keep-alive");
+
+      	
+		double cheapestAsk = askQueue.top().price;
+		double highestBid = bidQueue.top().price;	
+		double price = (cheapestAsk+highestBid)/2;
+
+		
+		json data = { 
+			{"price", (price)},
+			{"ask", (cheapestAsk)},
+			{"bid", (highestBid)}
+		};
+		res.set_content(data.dump(), "application/json");
     	});
 
-	svr.Get("/api/getbidprice", [bidQueue](const httplib::Request&, httplib::Response& res){
-		int highestBid = bidQueue.top().price;		
-		json data = {{"price", highestBid}};
-		res.set_content(data.dump(), "application/json");
-	});
+	
 
 
 	svr.listen("0.0.0.0", 8080);

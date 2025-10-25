@@ -5,6 +5,7 @@
 #include <chrono>
 #include <stdexcept>
 #include <random>
+#include <thread>
 
 
 using json = nlohmann::json;
@@ -14,6 +15,8 @@ std::random_device rd;
 std::mt19937 gen;
 
 std::uniform_int_distribution<> disInt(95,105);
+std::uniform_int_distribution<> disInta(80,120);
+
 struct Order{
 	double price;
 	int shares;
@@ -71,11 +74,34 @@ public:
         return orders.empty();
     }
 };
+Queue<AscendingOrder> askQueue;
+Queue<DescendingOrder> bidQueue;
+void matchOrders(){
+	while(true){
+		Order mostExpensiveBid = bidQueue.top();
+		Order cheapestAsk = askQueue.top();
+		//not bothered by amount of shares yet
+		if(mostExpensiveBid.price >= cheapestAsk.price){
+			if(mostExpensiveBid.timestamp >= cheapestAsk.timestamp){
+				//execute at ask price
+				cout << "Order executed at: $" << cheapestAsk.price << endl;
+			}else{
+				//execute at bid price
+				cout << "Order executed at: $" << mostExpensiveBid.price << endl;
+			}
+			askQueue.pop();
+			bidQueue.pop();
+			
+		}
+
+		std::this_thread::sleep_for(std::chrono::seconds(2));
+	}
+
+}
 
 int main() {
 	httplib::Server svr;
-	Queue<DescendingOrder> askQueue;
-	Queue<AscendingOrder> bidQueue;
+	
 	//Here this is an ascending order queue, so when trying to fill orders it will work from the cheapest first.*
 	for(int i = 0; i <10; i++){
 		askQueue.push(disInt(gen), 5, "user");
@@ -83,7 +109,7 @@ int main() {
 	for(int i = 0; i <10; i++){
 		bidQueue.push(disInt(gen), 5, "user");
 	}
-	
+	std::thread matcher(matchOrders);
 
 	svr.Options(".*", [](const httplib::Request &, httplib::Response &res) {
         res.set_header("Access-Control-Allow-Origin", "*");
@@ -117,6 +143,8 @@ int main() {
 
 
 	svr.listen("0.0.0.0", 8080);
+		
+	matcher.join();
 }
 
 

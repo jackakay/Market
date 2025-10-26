@@ -74,42 +74,74 @@ public:
         return orders.empty();
     }
 };
+
+
+
 Queue<AscendingOrder> askQueue;
 Queue<DescendingOrder> bidQueue;
+std::mutex order_mutex;
+
 void matchOrders(){
 	while(true){
+		std::lock_guard<std::mutex> lock(order_mutex);
+
+		if (bidQueue.empty() || askQueue.empty())
+            continue;
+		double executionPrice;
 		Order mostExpensiveBid = bidQueue.top();
 		Order cheapestAsk = askQueue.top();
 		//not bothered by amount of shares yet
 		if(mostExpensiveBid.price >= cheapestAsk.price){
 			if(mostExpensiveBid.timestamp >= cheapestAsk.timestamp){
+				executionPrice = cheapestAsk.price;
 				//execute at ask price
-				cout << "Order executed at: $" << cheapestAsk.price << endl;
+				//cout << "Order executed at: $" << cheapestAsk.price << " /n";
 			}else{
+				executionPrice = mostExpensiveBid.price;
 				//execute at bid price
-				cout << "Order executed at: $" << mostExpensiveBid.price << endl;
+				//cout << "Order executed at: $" << mostExpensiveBid.price << " /n";
 			}
 			askQueue.pop();
 			bidQueue.pop();
 			
+			
+			
+			
 		}
+		
+		std::uniform_int_distribution<> randomPrice((executionPrice-3),(executionPrice +3));
+		
+        
+		for(int i =0; i < 1; i++){
 
-		std::this_thread::sleep_for(std::chrono::seconds(2));
+				
+				std::uniform_int_distribution<> askOrBid(0,2);
+				int choice = askOrBid(gen);
+				int price = randomPrice(gen);
+				if(choice == 1){
+					askQueue.push(price, 5, "user");
+				}else bidQueue.push(price, 5 , "user");
+					cout << "added order at " << price << endl;
+		}
+		
+		
 	}
 
 }
+
 
 int main() {
 	httplib::Server svr;
 	
 	//Here this is an ascending order queue, so when trying to fill orders it will work from the cheapest first.*
-	for(int i = 0; i <10; i++){
+	for(int i = 0; i <300; i++){
 		askQueue.push(disInt(gen), 5, "user");
 	}
-	for(int i = 0; i <10; i++){
+	for(int i = 0; i <300; i++){
 		bidQueue.push(disInt(gen), 5, "user");
 	}
 	std::thread matcher(matchOrders);
+	
 
 	svr.Options(".*", [](const httplib::Request &, httplib::Response &res) {
         res.set_header("Access-Control-Allow-Origin", "*");
@@ -120,14 +152,14 @@ int main() {
 
 	svr.set_mount_point("/", "frontend");
 	svr.Get("/api/price", [askQueue, bidQueue](const httplib::Request&, httplib::Response& res) {
-
+		std::lock_guard<std::mutex> lock(order_mutex);
 		res.set_header("Content-Type", "text/event-stream");
         res.set_header("Cache-Control", "no-cache");
         res.set_header("Connection", "keep-alive");
 
       	
 		double cheapestAsk = askQueue.top().price;
-		double highestBid = bidQueue.top().price;	
+		double highestBid = bidQueue.top().price;
 		double price = (cheapestAsk+highestBid)/2;
 
 		
@@ -145,6 +177,7 @@ int main() {
 	svr.listen("0.0.0.0", 8080);
 		
 	matcher.join();
+	
 }
 
 

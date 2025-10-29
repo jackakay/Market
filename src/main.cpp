@@ -14,8 +14,9 @@ using namespace std;
 std::random_device rd;
 std::mt19937 gen;
 
-std::uniform_int_distribution<> disInt(95,105);
-std::uniform_int_distribution<> disInta(80,120);
+std::uniform_int_distribution<> disInt(99,101);
+
+std::normal_distribution<> priceChangeNormal(0.0, 0.01);
 
 struct Order{
 	double price;
@@ -80,7 +81,8 @@ public:
 Queue<AscendingOrder> askQueue;
 Queue<DescendingOrder> bidQueue;
 std::mutex order_mutex;
-
+const int VOLUME = 5;
+//COME BACK SOLVE THIS SO ASK IS HIGHER THAN BID
 void matchOrders(){
 	while(true){
 		std::lock_guard<std::mutex> lock(order_mutex);
@@ -103,18 +105,11 @@ void matchOrders(){
 			}
 			askQueue.pop();
 			bidQueue.pop();
-			
-			
-			
-			
 		}
-		
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		/*
 		std::uniform_int_distribution<> randomPrice((executionPrice-3),(executionPrice +3));
-		
-        
 		for(int i =0; i < 1; i++){
-
-				
 				std::uniform_int_distribution<> askOrBid(0,2);
 				int choice = askOrBid(gen);
 				int price = randomPrice(gen);
@@ -122,6 +117,17 @@ void matchOrders(){
 					askQueue.push(price, 5, "user");
 				}else bidQueue.push(price, 5 , "user");
 					cout << "added order at " << price << endl;
+		}
+		*/
+	
+		for(int i = 0; i < VOLUME; i++){
+			double price = executionPrice + priceChangeNormal(gen);
+			std::uniform_int_distribution<> askOrBid(0,2);
+				int choice = askOrBid(gen);
+				
+				if(choice == 1){
+					askQueue.push(price, 5, "user");
+				}else bidQueue.push(price, 5 , "user");
 		}
 		
 		

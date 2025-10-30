@@ -16,7 +16,7 @@ std::mt19937 gen;
 
 std::uniform_int_distribution<> disInt(99,101);
 
-std::normal_distribution<> priceChangeNormal(0.0, 0.01);
+std::normal_distribution<> priceChangeNormal(0.0, 0.1);
 
 struct Order{
 	double price;
@@ -87,6 +87,19 @@ void matchOrders(){
 	while(true){
 		std::lock_guard<std::mutex> lock(order_mutex);
 
+		for(int i = 0; i < VOLUME; i++){
+			double currentPrice = (askQueue.top().price + bidQueue.top().price)/2;
+			double price = currentPrice + priceChangeNormal(gen);
+			std::uniform_int_distribution<> askOrBid(0,2);
+			int choice = askOrBid(gen);
+				
+			if(choice == 1){
+				askQueue.push(price, 5, "user");
+			}else bidQueue.push(price, 5 , "user");
+			cout << (choice == 1 ? "SELL" : "BUY") << " order at price: " << price << endl;  
+		}
+
+
 		if (bidQueue.empty() || askQueue.empty())
             continue;
 		double executionPrice;
@@ -106,7 +119,7 @@ void matchOrders(){
 			askQueue.pop();
 			bidQueue.pop();
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 		/*
 		std::uniform_int_distribution<> randomPrice((executionPrice-3),(executionPrice +3));
 		for(int i =0; i < 1; i++){
@@ -119,18 +132,10 @@ void matchOrders(){
 					cout << "added order at " << price << endl;
 		}
 		*/
-	
-		for(int i = 0; i < VOLUME; i++){
-			double price = executionPrice + priceChangeNormal(gen);
-			std::uniform_int_distribution<> askOrBid(0,2);
-				int choice = askOrBid(gen);
-				
-				if(choice == 1){
-					askQueue.push(price, 5, "user");
-				}else bidQueue.push(price, 5 , "user");
-		}
+		/*
 		
 		
+		*/
 	}
 
 }
@@ -140,11 +145,11 @@ int main() {
 	httplib::Server svr;
 	
 	//Here this is an ascending order queue, so when trying to fill orders it will work from the cheapest first.*
-	for(int i = 0; i <300; i++){
-		askQueue.push(disInt(gen), 5, "user");
+	for(int i = 0; i <10; i++){
+		askQueue.push(100.5, 5, "user");
 	}
-	for(int i = 0; i <300; i++){
-		bidQueue.push(disInt(gen), 5, "user");
+	for(int i = 0; i <10; i++){
+		bidQueue.push(99.5, 5, "user");
 	}
 	std::thread matcher(matchOrders);
 	
@@ -182,7 +187,7 @@ int main() {
 
 	svr.listen("0.0.0.0", 8080);
 		
-	matcher.join();
+	//matcher.join();
 	
 }
 
